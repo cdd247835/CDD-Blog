@@ -1,0 +1,147 @@
+# 代码随想录算法训练营第16天 513.找树左下角的值、112. 路径总和 、106.从中序与后序遍历序列构造二叉树
+
+## 513.找树左下角的值
+
+```java
+//迭代
+class Solution {
+    public int findBottomLeftValue(TreeNode root) {
+        int result = 0;
+        Queue<TreeNode> q = new LinkedList<>();
+        q.offer(root);
+        while(!q.isEmpty()){  
+            int size = q.size();
+            for(int i = 0;i < size;i++){
+                TreeNode pop = q.poll();
+                if(i == 0){
+                    result = pop.val;
+                }
+                if(pop.left != null){
+                    q.offer(pop.left);
+                }
+                if(pop.right != null){
+                    q.offer(pop.right);
+                }
+            }
+        }
+        return result;
+    }
+}
+```
+
+```java
+//递归
+class Solution {
+    int maxDepth = 0;
+    int result;
+    public int findBottomLeftValue(TreeNode root) {
+        int depth = 1;
+        traversal(root,depth);
+        return result;
+    }
+    private void traversal(TreeNode root,int depth){
+        if(root.left == null && root.right == null){
+            if(depth > maxDepth){
+                maxDepth = depth;
+                result = root.val;
+            }            
+        }
+        if(root.left != null){
+            depth++;
+            traversal(root.left,depth);
+            depth--;
+        }
+        if(root.right != null){
+            depth++;
+            traversal(root.right,depth);
+            depth--;
+        }
+        return;
+    }
+}
+```
+
+## 112. 路径总和
+
+```java
+class Solution {
+    public boolean hasPathSum(TreeNode root, int targetSum) {
+        if(root == null){
+            return false;
+        }
+        return traversal(root,targetSum);
+    }
+    private boolean traversal(TreeNode root,int count){
+        if(root.left == null && root.right == null && count == 0){
+            return true;
+        }
+        if(root.left == null && root.left == null && count != 0){
+            return false;
+        }
+        if(root.left != null){
+            count -= root.left.val;
+            if(traversal(root.left,count)){return true;};
+            count += root.left.val;
+        }
+        if(root.right != null){
+            count -= root.right.val;
+            if(traversal(root.right,count)){return true;};
+            count += root.right.val;
+        }
+        return false;
+    }
+}
+```
+
+## 106.从中序与后序遍历序列构造二叉树
+
+```java
+class Solution {
+    // 中序区间：[inorderBegin, inorderEnd)，后序区间[postorderBegin, postorderEnd)
+    private TreeNode traversal(int[] inorder, int inorderBegin, int inorderEnd, int[] postorder, int postorderBegin, int postorderEnd) {
+        if (postorderBegin == postorderEnd) return null;
+
+        // 后序遍历的最后一个节点是根节点
+        int rootValue = postorder[postorderEnd - 1];
+        TreeNode root = new TreeNode(rootValue);
+
+        // 如果当前区间只有一个节点，直接返回
+        if (postorderEnd - postorderBegin == 1) return root;
+
+        // 在中序遍历中找到根节点的位置
+        int delimiterIndex;
+        for (delimiterIndex = inorderBegin; delimiterIndex < inorderEnd; delimiterIndex++) {
+            if (inorder[delimiterIndex] == rootValue) break;
+        }
+
+        // 切割中序数组
+        // 左中序区间，左闭右开[leftInorderBegin, leftInorderEnd)
+        int leftInorderBegin = inorderBegin;
+        int leftInorderEnd = delimiterIndex;
+        // 右中序区间，左闭右开[rightInorderBegin, rightInorderEnd)
+        int rightInorderBegin = delimiterIndex + 1;
+        int rightInorderEnd = inorderEnd;
+
+        // 切割后序数组
+        // 左后序区间，左闭右开[leftPostorderBegin, leftPostorderEnd)
+        int leftPostorderBegin = postorderBegin;
+        int leftPostorderEnd = postorderBegin + (delimiterIndex - inorderBegin); // 终止位置需要加上中序区间的大小
+        // 右后序区间，左闭右开[rightPostorderBegin, rightPostorderEnd)
+        int rightPostorderBegin = postorderBegin + (delimiterIndex - inorderBegin);
+        int rightPostorderEnd = postorderEnd - 1; // 排除最后一个元素，已经作为节点了
+
+        // 递归构建左右子树
+        root.left = traversal(inorder, leftInorderBegin, leftInorderEnd, postorder, leftPostorderBegin, leftPostorderEnd);
+        root.right = traversal(inorder, rightInorderBegin, rightInorderEnd, postorder, rightPostorderBegin, rightPostorderEnd);
+
+        return root;
+    }
+
+    public TreeNode buildTree(int[] inorder, int[] postorder) {
+        if (inorder.length == 0 || postorder.length == 0) return null;
+        // 左闭右开的原则
+        return traversal(inorder, 0, inorder.length, postorder, 0, postorder.length);
+    }
+}
+```
+
