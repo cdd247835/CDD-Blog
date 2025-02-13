@@ -1,0 +1,141 @@
+# 代码随想录算法训练营第17天 **654.最大二叉树** 、**617.合并二叉树** 、**700.二叉搜索树中的搜索**、**98.验证二叉搜索树**
+
+## **654.最大二叉树**
+
+```java
+class Solution {
+    public TreeNode constructMaximumBinaryTree(int[] nums) {
+        TreeNode node = new TreeNode(0);
+        if (nums.length == 1) {
+            node.val = nums[0];
+            return node;
+        }
+        // 找到数组中最大的值和对应的下标
+        int maxValue = 0;
+        int maxValueIndex = 0;
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] > maxValue) {
+                maxValue = nums[i];
+                maxValueIndex = i;
+            }
+        }
+        node.val = maxValue;
+        // 最大值所在的下标左区间 构造左子树
+        if (maxValueIndex > 0) {
+            int[] leftNums = new int[maxValueIndex];
+            System.arraycopy(nums, 0, leftNums, 0, maxValueIndex);
+            node.left = constructMaximumBinaryTree(leftNums);
+        }
+        // 最大值所在的下标右区间 构造右子树
+        if (maxValueIndex < (nums.length - 1)) {
+            int[] rightNums = new int[nums.length - maxValueIndex - 1];
+            System.arraycopy(nums, maxValueIndex + 1, rightNums, 0, nums.length - maxValueIndex - 1);
+            node.right = constructMaximumBinaryTree(rightNums);
+        }
+        return node;
+    }
+}
+```
+
+## 617.合并二叉树
+
+```java
+class Solution {
+    public TreeNode mergeTrees(TreeNode root1, TreeNode root2) {
+        TreeNode root = new TreeNode(0);
+        if(root1 == null){
+            return root2;
+        }
+        if(root2 == null){
+            return root1;
+        }
+        root.val = root1.val + root2.val;
+        root.left = mergeTrees(root1.left,root2.left);
+        root.right = mergeTrees(root1.right,root2.right);
+        return root;
+    }
+}
+```
+
+## 700.二叉搜索树中的搜索
+
+```java
+//递归
+class Solution {
+    public TreeNode searchBST(TreeNode root, int val) {
+        if(root == null || root.val == val){
+            return root;
+        }
+        TreeNode res = null;
+        if(root.val < val){
+            res = searchBST(root.right,val);
+        }
+        if(root.val > val){
+            res = searchBST(root.left,val);
+        }
+        return res;
+    }
+}
+```
+
+```java
+//迭代
+class Solution {
+    public TreeNode searchBST(TreeNode root, int val) {
+        while(root != null){
+            if(root.val > val){
+                root = root.left;
+            }else if(root.val < val){
+                root = root.right;
+            }else{
+                return root;
+            }
+        }
+        return null;
+    }
+}
+```
+
+## 98.验证二叉搜索树
+
+```java
+class Solution {
+    private List<Integer> arr = new ArrayList<>();
+    private void traversal(TreeNode root){
+        if(root == null){
+            return;
+        }
+        traversal(root.left);
+        arr.add(root.val);
+        traversal(root.right);
+    }
+    public boolean isValidBST(TreeNode root) {
+        traversal(root);
+        for(int i = 1;i < arr.size();i++){
+            if(arr.get(i) <= arr.get(i - 1)){
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
+
+```java
+class Solution {
+    private TreeNode pre = null;
+    public boolean isValidBST(TreeNode root) {
+        if(root == null){
+            return true;
+        }
+        boolean left = isValidBST(root.left);
+        if(pre != null && pre.val >= root.val){
+            return false;
+        }
+        pre = root;
+        boolean right = isValidBST(root.right);
+        return left && right;
+    }
+}
+```
+
