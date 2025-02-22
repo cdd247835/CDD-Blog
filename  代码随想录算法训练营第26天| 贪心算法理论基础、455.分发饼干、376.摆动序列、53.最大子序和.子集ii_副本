@@ -1,0 +1,87 @@
+# 代码随想录算法训练营第26天| 贪心算法理论基础、455.分发饼干、376.摆动序列、53.最大子序和
+
+## 贪心算法理论基础
+
+![贪心算法大纲](https://code-thinking-1253855093.file.myqcloud.com/pics/20210917104315.png)
+
+## 455.分发饼干
+
+```java
+class Solution {
+    public int findContentChildren(int[] g, int[] s) {
+        int res = 0;
+        int index = 0;
+        Arrays.sort(g);
+        Arrays.sort(s);
+        for(int i = 0;i < s.length;i++){
+            if(index < g.length && s[i] >= g[index]){
+                index++;
+                res++;
+            }
+        }
+        return res;
+    }
+}
+
+class Solution {
+    public int findContentChildren(int[] g, int[] s) {
+        // 对孩子的胃口值和饼干的大小进行排序
+        Arrays.sort(g);
+        Arrays.sort(s);
+        
+        int index = s.length - 1; // 饼干数组的下标
+        int result = 0; // 满足的孩子数量
+        
+        // 从大到小遍历孩子的胃口值
+        for (int i = g.length - 1; i >= 0; i--) {
+            // 如果当前饼干可以满足当前孩子的胃口
+            if (index >= 0 && s[index] >= g[i]) {
+                result++; // 满足一个孩子
+                index--;   // 移动到下一个饼干
+            }
+        }
+        
+        return result;
+    }
+}
+```
+
+## 376.摆动序列
+
+```JAVA
+class Solution {
+    public int wiggleMaxLength(int[] nums) {
+        int res = 1;
+        int pre = 0;
+        int cur = 0;
+        for(int i = 0;i < nums.length - 1;i++){
+            cur = nums[i + 1] - nums[i];
+            if((pre >= 0 && cur < 0) || (pre <=0 && cur > 0)){
+                res++;
+                pre = cur;
+            }
+        }
+        return res;
+    }
+}
+```
+
+## 53.最大子序和
+
+```java
+class Solution {
+    public int maxSubArray(int[] nums) {
+        int res = Integer.MIN_VALUE;
+        int count = 0;
+        for(int i = 0;i < nums.length;i++){
+            count += nums[i];
+            if(count > res){
+                res = count;
+            }
+            if(count <= 0){count = 0;}          
+        }
+        return res;
+    }
+}
+```
+
