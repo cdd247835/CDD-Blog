@@ -1,0 +1,92 @@
+# 代码随想录算法训练营第31天|56.合并区间、738.单调递增的数字、968.监控二叉树
+
+## 56.合并区间
+
+```java
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        List<int[]> result = new ArrayList<>();
+        if (intervals == null || intervals.length == 0) {
+            return result.toArray(new int[0][]);
+        }
+
+        // 按区间起始值排序
+        Arrays.sort(intervals, Comparator.comparingInt(a -> a[0]));
+
+        // 将第一个区间加入结果集
+        result.add(intervals[0]);
+
+        for (int i = 1; i < intervals.length; i++) {
+            int[] lastInterval = result.get(result.size() - 1); // 获取结果集中的最后一个区间
+            int[] currentInterval = intervals[i]; // 当前区间
+
+            if (lastInterval[1] >= currentInterval[0]) { // 发现重叠区间
+                // 合并区间，更新右边界
+                lastInterval[1] = Math.max(lastInterval[1], currentInterval[1]);
+            } else {
+                // 区间不重叠，直接加入结果集
+                result.add(currentInterval);
+            }
+        }
+
+        // 将 List<int[]> 转换为 int[][]
+        return result.toArray(new int[result.size()][]);
+    }
+}
+```
+
+### 738.单调递增的数字
+
+```JAVA
+class Solution {
+    public int monotoneIncreasingDigits(int N) {
+        char[] strNum = Integer.toString(N).toCharArray();
+        // flag用来标记赋值9从哪里开始
+        // 设置为这个默认值，为了防止第二个for循环在flag没有被赋值的情况下执行
+        int flag = strNum.length;
+        for (int i = strNum.length - 1; i > 0; i--) {
+            if (strNum[i - 1] > strNum[i]) {
+                flag = i;
+                strNum[i - 1]--;
+            }
+        }
+        for (int i = flag; i < strNum.length; i++) {
+            strNum[i] = '9';
+        }
+        return Integer.parseInt(new String(strNum));
+    }
+}
+```
+
+## 968.监控二叉树
+
+```java
+class Solution {
+    private int res = 0;
+    int traversal(TreeNode root){
+        if(root == null){
+            return 2;
+        }
+        int left = traversal(root.left);
+        int right = traversal(root.right);
+        if(left == 2 && right == 2){
+            return 0;
+        }
+        if(left == 0 || right == 0){
+            res++;
+            return 1;
+        }
+        if(left == 1 || right == 1){
+            return 2;
+        }
+        return -1;
+    }
+    public int minCameraCover(TreeNode root) {
+        res = 0;
+        if(traversal(root) == 0){
+            res++;
+        }
+        return res;
+    }
+}
+```
