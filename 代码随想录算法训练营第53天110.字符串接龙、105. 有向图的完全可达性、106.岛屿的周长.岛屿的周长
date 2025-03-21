@@ -1,0 +1,178 @@
+# 代码随想录算法训练营第53天|110.字符串接龙、105. 有向图的完全可达性、106.岛屿的周长
+
+##  110.字符串接龙
+
+```java
+//bfs
+import java.util.*;
+
+public class WordLadder {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        
+        int n = scanner.nextInt();
+        String beginStr = scanner.next();
+        String endStr = scanner.next();
+        
+        Set<String> strSet = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            strSet.add(scanner.next());
+        }
+        scanner.close();
+        
+        // 记录访问过的字符串及其路径长度
+        Map<String, Integer> visitMap = new HashMap<>();
+        
+        // BFS 队列
+        Queue<String> queue = new LinkedList<>();
+        queue.offer(beginStr);
+        
+        // 初始化访问记录
+        visitMap.put(beginStr, 1);
+        
+        while (!queue.isEmpty()) {
+            String word = queue.poll();
+            int path = visitMap.get(word);
+            
+            // 替换 word 中的每个字符
+            char[] wordArray = word.toCharArray();
+            for (int i = 0; i < wordArray.length; i++) {
+                char originalChar = wordArray[i];  // 记录原始字符
+                for (char c = 'a'; c <= 'z'; c++) {
+                    if (c == originalChar) continue; // 跳过相同字符
+                    
+                    wordArray[i] = c;
+                    String newWord = new String(wordArray);
+                    
+                    // 找到终点，直接返回路径长度
+                    if (newWord.equals(endStr)) {
+                        System.out.println(path + 1);
+                        return;
+                    }
+                    
+                    // 确保 newWord 在字典中，并且尚未访问
+                    if (strSet.contains(newWord) && !visitMap.containsKey(newWord)) {
+                        visitMap.put(newWord, path + 1);
+                        queue.offer(newWord);
+                    }
+                }
+                wordArray[i] = originalChar; // 还原字符
+            }
+        }
+        
+        // 未找到转换路径
+        System.out.println(0);
+    }
+}
+```
+
+## 105. 有向图的完全可达性
+
+```java
+import java.util.*;
+
+public class GraphDFS {
+    // DFS递归方法，处理当前访问的节点
+    public static void dfs(List<List<Integer>> graph, int key, boolean[] visited) {
+        // 如果该节点已经访问过，则直接返回
+        if (visited[key]) {
+            return;
+        }
+        // 标记当前节点为已访问
+        visited[key] = true;
+        
+        // 遍历与该节点相邻的所有节点
+        for (int next : graph.get(key)) {
+            dfs(graph, next, visited);
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        
+        // 读取节点数 n 和边数 m
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        // 使用邻接表存储图，节点编号从 1 到 n，因此数组大小为 n+1，索引 0 不使用
+        List<List<Integer>> graph = new ArrayList<>();
+        for (int i = 0; i <= n; i++) {
+            graph.add(new LinkedList<>());
+        }
+        
+        // 读取每条边的信息，构建图
+        // 每条边 s -> t 表示 s 和 t 相连
+        for (int i = 0; i < m; i++) {
+            int s = scanner.nextInt();
+            int t = scanner.nextInt();
+            graph.get(s).add(t);
+        }
+        
+        // 初始化访问数组，记录每个节点是否被访问过
+        boolean[] visited = new boolean[n + 1];
+        
+        // 从节点1开始进行DFS遍历
+        dfs(graph, 1, visited);
+        
+        // 检查是否所有节点都访问到了
+        for (int i = 1; i <= n; i++) {
+            if (!visited[i]) {
+                System.out.println(-1);
+                scanner.close();
+                return;
+            }
+        }
+        
+        System.out.println(1);
+        scanner.close();
+    }
+}
+```
+
+## 106.岛屿的周长
+
+```c++
+import java.util.Scanner;
+
+public class IslandPerimeter {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        int[][] grid = new int[n][m];
+
+        // 读取网格数据
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                grid[i][j] = scanner.nextInt();
+            }
+        }
+
+        // 方向数组：右、下、左、上
+        int[][] direction = {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+        int result = 0;
+
+        // 遍历整个网格
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (grid[i][j] == 1) {  // 只计算陆地
+                    for (int k = 0; k < 4; k++) {
+                        int x = i + direction[k][0];
+                        int y = j + direction[k][1];
+
+                        // 如果越界或者是水域，增加周长
+                        if (x < 0 || x >= n || y < 0 || y >= m || grid[x][y] == 0) {
+                            result++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 输出周长
+        System.out.println(result);
+        scanner.close();
+    }
+}
+```
+
