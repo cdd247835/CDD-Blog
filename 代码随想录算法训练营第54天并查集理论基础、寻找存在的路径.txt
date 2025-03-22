@@ -1,0 +1,208 @@
+# 代码随想录算法训练营第54天|并查集理论基础、寻找存在的路径
+
+##  并查集理论基础
+
+```java
+public class DisjointSet {
+    int[] s;
+    // 索引对应顶点
+    // 元素是用来表示与之有关系的顶点
+    /*
+        索引  0  1  2  3  4  5  6
+        元素 [0, 1, 2, 3, 4, 5, 6] 表示一开始顶点直接没有联系（只与自己有联系）
+
+    */
+
+    public DisjointSet(int size) {
+        s = new int[size];
+        for (int i = 0; i < size; i++) {
+            s[i] = i;
+        }
+    }
+
+    // find 是找到老大
+    public int find(int x) {
+        if (x == s[x]) {
+            return x;
+        }
+        return find(s[x]);
+    }
+
+    // union 是让两个集合“相交”，即选出新老大，x、y 是原老大索引
+    public void union(int x, int y) {
+        s[y] = x;
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(s);
+    }
+
+}
+
+// 路径压缩
+public int find(int x) { // x = 2
+    if (x == s[x]) {
+        return x;
+    }
+    return s[x] = find(s[x]); // 0    s[2]=0
+}
+public class DisjointSetUnionBySize {
+    int[] s;
+    int[] size;
+    public DisjointSetUnionBySize(int size) {
+        s = new int[size];
+        this.size = new int[size];
+        for (int i = 0; i < size; i++) {
+            s[i] = i;
+            this.size[i] = 1;
+        }
+    }
+
+    // find 是找到老大 - 优化：路径压缩
+    public int find(int x) { // x = 2
+        if (x == s[x]) {
+            return x;
+        }
+        return s[x] = find(s[x]); // 0    s[2]=0
+    }
+
+    // union 是让两个集合“相交”，即选出新老大，x、y 是原老大索引
+    public void union(int x, int y) {
+//        s[y] = x;
+        if (size[x] < size[y]) {
+            int t = x;
+            x = y;
+            y = t;
+        }
+        s[y] = x;
+        size[x] = size[x] + size[y];
+    }
+
+    @Override
+    public String toString() {
+        return "内容："+Arrays.toString(s) + "\n大小：" + Arrays.toString(size);
+    }
+
+    public static void main(String[] args) {
+        DisjointSetUnionBySize set = new DisjointSetUnionBySize(5);
+
+        set.union(1, 2);
+        set.union(3, 4);
+        set.union(1, 3);
+        System.out.println(set);
+    }
+
+
+}
+```
+
+## 寻找存在的路径
+
+```java
+import java.util.*;
+
+public class GraphDFS {
+    // DFS递归方法，处理当前访问的节点
+    public static void dfs(List<List<Integer>> graph, int key, boolean[] visited) {
+        // 如果该节点已经访问过，则直接返回
+        if (visited[key]) {
+            return;
+        }
+        // 标记当前节点为已访问
+        visited[key] = true;
+        
+        // 遍历与该节点相邻的所有节点
+        for (int next : graph.get(key)) {
+            dfs(graph, next, visited);
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        
+        // 读取节点数 n 和边数 m
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        // 使用邻接表存储图，节点编号从 1 到 n，因此数组大小为 n+1，索引 0 不使用
+        List<List<Integer>> graph = new ArrayList<>();
+        for (int i = 0; i <= n; i++) {
+            graph.add(new LinkedList<>());
+        }
+        
+        // 读取每条边的信息，构建图
+        // 每条边 s -> t 表示 s 和 t 相连
+        for (int i = 0; i < m; i++) {
+            int s = scanner.nextInt();
+            int t = scanner.nextInt();
+            graph.get(s).add(t);
+        }
+        
+        // 初始化访问数组，记录每个节点是否被访问过
+        boolean[] visited = new boolean[n + 1];
+        
+        // 从节点1开始进行DFS遍历
+        dfs(graph, 1, visited);
+        
+        // 检查是否所有节点都访问到了
+        for (int i = 1; i <= n; i++) {
+            if (!visited[i]) {
+                System.out.println(-1);
+                scanner.close();
+                return;
+            }
+        }
+        
+        System.out.println(1);
+        scanner.close();
+    }
+}
+```
+
+## 106.岛屿的周长
+
+```c++
+import java.util.Scanner;
+
+public class IslandPerimeter {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        int[][] grid = new int[n][m];
+
+        // 读取网格数据
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                grid[i][j] = scanner.nextInt();
+            }
+        }
+
+        // 方向数组：右、下、左、上
+        int[][] direction = {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+        int result = 0;
+
+        // 遍历整个网格
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (grid[i][j] == 1) {  // 只计算陆地
+                    for (int k = 0; k < 4; k++) {
+                        int x = i + direction[k][0];
+                        int y = j + direction[k][1];
+
+                        // 如果越界或者是水域，增加周长
+                        if (x < 0 || x >= n || y < 0 || y >= m || grid[x][y] == 0) {
+                            result++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 输出周长
+        System.out.println(result);
+        scanner.close();
+    }
+}
+```
