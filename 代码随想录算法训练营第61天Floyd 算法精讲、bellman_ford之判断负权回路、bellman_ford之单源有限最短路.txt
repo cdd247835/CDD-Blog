@@ -1,0 +1,208 @@
+# 代码随想录算法训练营第61天|Floyd 算法精讲、bellman_ford之判断负权回路、bellman_ford之单源有限最短路
+
+##  Floyd 算法精讲
+
+```java
+import java.util.Scanner;
+
+public class FloydWarshall {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt(); // 节点数量
+        int m = scanner.nextInt(); // 边数量
+        
+        // 初始化三维数组，grid[i][j][k]表示i到j经过前k个节点的最短路径
+        int[][][] grid = new int[n+1][n+1][n+1];
+        
+        // 初始化为最大值10005（因为题目说明边的最大距离是10^4）
+        for(int i = 1; i <= n; i++) {
+            for(int j = 1; j <= n; j++) {
+                for(int k = 0; k <= n; k++) {
+                    grid[i][j][k] = 10005;
+                }
+                if(i == j) {
+                    grid[i][j][0] = 0; // 节点到自身的距离为0
+                }
+            }
+        }
+        
+        // 读取所有边（无向图）
+        for(int i = 0; i < m; i++) {
+            int p1 = scanner.nextInt();
+            int p2 = scanner.nextInt();
+            int val = scanner.nextInt();
+            grid[p1][p2][0] = val;
+            grid[p2][p1][0] = val; // 无向图，双向设置
+        }
+        
+        // Floyd-Warshall算法核心部分
+        for(int k = 1; k <= n; k++) {
+            for(int i = 1; i <= n; i++) {
+                for(int j = 1; j <= n; j++) {
+                    // 状态转移方程
+                    grid[i][j][k] = Math.min(
+                        grid[i][j][k-1], // 不经过k节点
+                        grid[i][k][k-1] + grid[k][j][k-1] // 经过k节点
+                    );
+                }
+            }
+        }
+        
+        // 处理查询
+        int z = scanner.nextInt();
+        while(z-- > 0) {
+            int start = scanner.nextInt();
+            int end = scanner.nextInt();
+            if(grid[start][end][n] == 10005) {
+                System.out.println(-1); // 不可达
+            } else {
+                System.out.println(grid[start][end][n]); // 输出最短距离
+            }
+        }
+    }
+}
+```
+
+```java
+import java.util.Scanner;
+
+public class FloydWarshall {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt(); // 节点数量
+        int m = scanner.nextInt(); // 边数量
+        
+        // 初始化邻接矩阵，grid[i][j]表示i到j的直接距离
+        int[][] grid = new int[n+1][n+1];
+        
+        // 初始化为最大值10005（因为题目说明边的最大距离是10^4）
+        for(int i = 1; i <= n; i++) {
+            for(int j = 1; j <= n; j++) {
+                grid[i][j] = 10005;
+            }
+            grid[i][i] = 0; // 节点到自身的距离为0
+        }
+        
+        // 读取所有边（无向图）
+        for(int i = 0; i < m; i++) {
+            int p1 = scanner.nextInt();
+            int p2 = scanner.nextInt();
+            int val = scanner.nextInt();
+            grid[p1][p2] = val;
+            grid[p2][p1] = val; // 无向图，双向设置
+        }
+        
+        // Floyd-Warshall算法核心部分
+        for(int k = 1; k <= n; k++) {
+            for(int i = 1; i <= n; i++) {
+                for(int j = 1; j <= n; j++) {
+                    // 状态转移方程：比较直接路径和经过k节点的路径
+                    grid[i][j] = Math.min(grid[i][j], grid[i][k] + grid[k][j]);
+                }
+            }
+        }
+        
+        // 处理查询
+        int z = scanner.nextInt();
+        while(z-- > 0) {
+            int start = scanner.nextInt();
+            int end = scanner.nextInt();
+            if(grid[start][end] == 10005) {
+                System.out.println(-1); // 不可达
+            } else {
+                System.out.println(grid[start][end]); // 输出最短距离
+            }
+        }
+    }
+}
+```
+
+## A * 算法精讲 （A star算法）
+
+```java
+import java.util.*;
+
+class Knight implements Comparable<Knight> {
+    int x, y;
+    int g, h, f;
+    
+    public Knight(int x, int y, int g, int h) {
+        this.x = x;
+        this.y = y;
+        this.g = g;
+        this.h = h;
+        this.f = g + h;
+    }
+    
+    @Override
+    public int compareTo(Knight other) {
+        return Integer.compare(this.f, other.f);
+    }
+}
+
+public class KnightShortestPath {
+    static int[][] moves = new int[1001][1001];
+    static int[][] dir = {{-2,-1}, {-2,1}, {-1,2}, {1,2}, {2,1}, {2,-1}, {1,-2}, {-1,-2}};
+    static int b1, b2;
+    
+    static int heuristic(Knight k) {
+        return (k.x - b1) * (k.x - b1) + (k.y - b2) * (k.y - b2);
+    }
+    
+    static void aStar(Knight start) {
+        PriorityQueue<Knight> queue = new PriorityQueue<>();
+        queue.add(start);
+        
+        while (!queue.isEmpty()) {
+            Knight cur = queue.poll();
+            
+            if (cur.x == b1 && cur.y == b2) {
+                break;
+            }
+            
+            for (int i = 0; i < 8; i++) {
+                Knight next = new Knight(
+                    cur.x + dir[i][0],
+                    cur.y + dir[i][1],
+                    cur.g + 5,  // 马走日的代价：1² + 2² = 5
+                    0
+                );
+                
+                if (next.x < 1 || next.x > 1000 || next.y < 1 || next.y > 1000) {
+                    continue;
+                }
+                
+                if (moves[next.x][next.y] == 0) {
+                    moves[next.x][next.y] = moves[cur.x][cur.y] + 1;
+                    next.h = heuristic(next);
+                    next.f = next.g + next.h;
+                    queue.add(next);
+                }
+            }
+        }
+    }
+    
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        
+        while (n-- > 0) {
+            // 初始化移动记录数组
+            for (int i = 0; i <= 1000; i++) {
+                Arrays.fill(moves[i], 0);
+            }
+            
+            int a1 = scanner.nextInt();
+            int a2 = scanner.nextInt();
+            b1 = scanner.nextInt();
+            b2 = scanner.nextInt();
+            
+            Knight start = new Knight(a1, a2, 0, heuristic(new Knight(a1, a2, 0, 0)));
+            moves[a1][a2] = 0;
+            
+            aStar(start);
+            System.out.println(moves[b1][b2]);
+        }
+    }
+}
+```
